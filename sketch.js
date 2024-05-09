@@ -27,7 +27,7 @@ function draw() {
   fill("black");
   textSize(16);
   text(blockLookingAt(player, allChunks, 8), 10, 20);
-  colorSelectedBlock(worldToChunkCoords(blockLookingAt(player, allChunks, 8)))
+  // colorSelectedBlock(worldToChunkCoords(blockLookingAt(player, allChunks, 8)))
   text(blockInside(player), 10, 40);
   fill("white");
 }
@@ -115,16 +115,16 @@ function blockLookingAt(player, map, length) {
     }
   }
 
-  // for (let tup of l) {
-  //   // circle(tup[0] * BLOCK_SIDE_LENGTH, tup[1] * BLOCK_SIDE_LENGTH, 10);
-  //   fill(255, 0, 0, 30);
-  //   square(
-  //     tup[0] * BLOCK_SIDE_LENGTH,
-  //     tup[1] * BLOCK_SIDE_LENGTH,
-  //     BLOCK_SIDE_LENGTH
-  //   );
-  //   fill("black");
-  // }
+  for (let tup of l) {
+    // circle(tup[0] * BLOCK_SIDE_LENGTH, tup[1] * BLOCK_SIDE_LENGTH, 10);
+    fill(255, 0, 0, 30);
+    square(
+      tup[0] * BLOCK_SIDE_LENGTH,
+      tup[1] * BLOCK_SIDE_LENGTH,
+      BLOCK_SIDE_LENGTH
+    );
+    fill("black");
+  }
 
   fill("green");
   circle(x0 * BLOCK_SIDE_LENGTH, y0 * BLOCK_SIDE_LENGTH, 10);
