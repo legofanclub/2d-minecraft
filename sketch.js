@@ -2,16 +2,17 @@ BLOCK_SIDE_LENGTH = 24;
 CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
 DEBUG = true;
-allChunks = [];
+allChunks = {};
 player = null;
 
 function setup() {
   player = new Player(200, 350);
   player.direction = -PI / 5;
-  allChunks.push(new Chunk(0, 0));
-  allChunks.push(new Chunk(1, 1));
-  allChunks.push(new Chunk(0, 1));
-  allChunks.push(new Chunk(1, 0));
+  allChunks["(0,0)"] = new Chunk(0, 0);
+  allChunks["(0,0)"] = new Chunk(0, 0);
+  allChunks["(1,1)"] = new Chunk(1, 1);
+  allChunks["(0,1)"] = new Chunk(0, 1);
+  allChunks["(1,0)"] = new Chunk(1, 0);
   createCanvas(800, 800);
 }
 
@@ -20,7 +21,7 @@ function draw() {
 
   movePlayer(player);
 
-  for (let chunk of allChunks) {
+  for (let [key, chunk] of Object.entries(allChunks)) {
     drawChunk(chunk);
   }
 
