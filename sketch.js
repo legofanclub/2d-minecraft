@@ -1,7 +1,7 @@
 BLOCK_SIDE_LENGTH = 24;
 CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
-DEBUG = true;
+DEBUG = false;
 allChunks = {};
 player = null;
 
@@ -34,6 +34,7 @@ function drawSelectedBlock(){
   const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, 4);
   const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
 
+  fill("black");
   for ([key, [x,y]] of blocksInWorld){
     if(allChunks[key].contents[y][x] !== 0){
       square(allChunks[key].position[0]*CHUNK_SIDE_LENGTH*BLOCK_SIDE_LENGTH + x*BLOCK_SIDE_LENGTH,
@@ -43,6 +44,7 @@ function drawSelectedBlock(){
       break;
     }
   }
+  fill("white");
 }
 
 
