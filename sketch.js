@@ -24,10 +24,33 @@ function draw() {
     drawChunk(chunk);
   }
 
+  drawSelectedBlock();
   drawPlayer(player);
 
-  drawSelectedBlock();
   fill("white")
+}
+
+function mouseClicked(){
+  let val = getSelectedBlockInChunkCoords();
+  if(!val){
+    return null;
+  }
+
+  const [key, [x,y]] = val;
+
+  allChunks[key].contents[y][x] = 0;
+}
+
+function getSelectedBlockInChunkCoords(){
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, 4);
+  const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
+
+  for ([key, [x,y]] of blocksInWorld){
+    if(allChunks[key].contents[y][x] !== 0){
+      return([key, [x,y]]);
+    }
+  }
+  return null;
 }
 
 function drawSelectedBlock(){
