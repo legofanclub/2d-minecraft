@@ -9,7 +9,6 @@ function setup() {
   player = new Player(200, 350);
   player.direction = -PI / 5;
   allChunks["(0,0)"] = new Chunk(0, 0);
-  allChunks["(0,0)"] = new Chunk(0, 0);
   allChunks["(1,1)"] = new Chunk(1, 1);
   allChunks["(0,1)"] = new Chunk(0, 1);
   allChunks["(1,0)"] = new Chunk(1, 0);
@@ -32,16 +31,33 @@ function draw() {
 }
 
 function drawSelectedBlock(){
-  const blocksInLineOfSight = getAllBlocksInSight(player, 8);
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, 4);
+  const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
+
+  for ([key, [x,y]] of blocksInWorld){
+    if(allChunks[key].contents[y][x] !== 0){
+      square(allChunks[key].position[0]*CHUNK_SIDE_LENGTH*BLOCK_SIDE_LENGTH + x*BLOCK_SIDE_LENGTH,
+        allChunks[key].position[1]*CHUNK_SIDE_LENGTH*BLOCK_SIDE_LENGTH + y*BLOCK_SIDE_LENGTH,
+        BLOCK_SIDE_LENGTH
+      );
+      break;
+    }
+  }
 }
 
 
 function worldToChunkCoords(coords){
-  return(coords);
+  let [x, y] = coords;
+  const chunkX = Math.floor(x / CHUNK_SIDE_LENGTH);
+  const chunkY = Math.floor(y / CHUNK_SIDE_LENGTH);
+  const interiorX = x % CHUNK_SIDE_LENGTH;
+  const interiorY = y % CHUNK_SIDE_LENGTH;
+
+  return([`(${chunkX},${chunkY})`, [interiorX, interiorY]]);
 }
 
 // returns the world coordinates of all blocks in line of sight ordered from closest to farthest
-function getAllBlocksInSight(player, length) {
+function getAllBlocksCoordsInSight(player, length) {
   // algorithm taken from here: https://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
   const x0 = player.x / BLOCK_SIDE_LENGTH;
   const y0 = player.y / BLOCK_SIDE_LENGTH;
@@ -218,7 +234,7 @@ class Player {
 class Chunk {
   constructor(x = 0, y = 0) {
     this.contents = Array.from({ length: CHUNK_SIDE_LENGTH }, () =>
-      Array.from({ length: CHUNK_SIDE_LENGTH }, () => 1)
+      Array.from({ length: CHUNK_SIDE_LENGTH }, () => Math.random() > 0.7 ? 1 : 0)
     );
     this.position = [x, y];
   }
