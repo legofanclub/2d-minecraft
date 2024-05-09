@@ -25,16 +25,18 @@ function draw() {
   }
 
   drawPlayer(player);
-  colorSelectedBlock(worldToChunkCoords(getAllBlocksInSight(player, 8)))
+
+  drawSelectedBlock();
   fill("white")
 }
 
-function worldToChunkCoords(coords){
-  return(coords);
+function drawSelectedBlock(){
+  const blocksInLineOfSight = getAllBlocksInSight(player, 8);
 }
 
-function colorSelectedBlock(selected){
-  square(selected[0]*BLOCK_SIDE_LENGTH, selected[1]*BLOCK_SIDE_LENGTH, BLOCK_SIDE_LENGTH);
+
+function worldToChunkCoords(coords){
+  return(coords);
 }
 
 // returns the world coordinates of all blocks in line of sight ordered from closest to farthest
