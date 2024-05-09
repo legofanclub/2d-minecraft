@@ -30,6 +30,7 @@ function draw() {
   fill("white")
 }
 
+// for adding blocks, will first have to get normal of seleted block then add a block there
 function mouseClicked(){
   let val = getSelectedBlockInChunkCoords();
   if(!val){
