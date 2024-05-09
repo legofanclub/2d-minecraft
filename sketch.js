@@ -1,6 +1,7 @@
 BLOCK_SIDE_LENGTH = 24;
 CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
+DEBUG = true;
 allChunks = [];
 player = null;
 
@@ -24,12 +25,8 @@ function draw() {
   }
 
   drawPlayer(player);
-  fill("black");
-  textSize(16);
-  text(blockLookingAt(player, allChunks, 8), 10, 20);
-  // colorSelectedBlock(worldToChunkCoords(blockLookingAt(player, allChunks, 8)))
-  text(blockInside(player), 10, 40);
-  fill("white");
+  colorSelectedBlock(worldToChunkCoords(getAllBlocksInSight(player, 8)))
+  fill("white")
 }
 
 function worldToChunkCoords(coords){
@@ -40,7 +37,8 @@ function colorSelectedBlock(selected){
   square(selected[0]*BLOCK_SIDE_LENGTH, selected[1]*BLOCK_SIDE_LENGTH, BLOCK_SIDE_LENGTH);
 }
 
-function blockLookingAt(player, map, length) {
+// returns the world coordinates of all blocks in line of sight ordered from closest to farthest
+function getAllBlocksInSight(player, length) {
   // algorithm taken from here: https://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
   const x0 = player.x / BLOCK_SIDE_LENGTH;
   const y0 = player.y / BLOCK_SIDE_LENGTH;
@@ -58,12 +56,13 @@ function blockLookingAt(player, map, length) {
   let x = Math.floor(x0);
   let y = Math.floor(y0);
 
+  DEBUG ?
   line(
     x0 * BLOCK_SIDE_LENGTH,
     y0 * BLOCK_SIDE_LENGTH,
     x1 * BLOCK_SIDE_LENGTH,
     y1 * BLOCK_SIDE_LENGTH
-  );
+  ) : null;
   
   let dt_dx = 1.0 / dx;
   let dt_dy = 1.0 / dy;
@@ -100,9 +99,9 @@ function blockLookingAt(player, map, length) {
     t_next_vertical = (y0 - Math.floor(y0)) * dt_dy;
   }
   
-  const l = []
+  const blocksInSight = []
   for (; n > 0; n--) {
-    l.push([x, y]);
+    blocksInSight.push([x, y]);
 
     if (t_next_vertical < t_next_horizontal) {
       y += y_inc;
@@ -115,21 +114,20 @@ function blockLookingAt(player, map, length) {
     }
   }
 
-  for (let tup of l) {
-    // circle(tup[0] * BLOCK_SIDE_LENGTH, tup[1] * BLOCK_SIDE_LENGTH, 10);
-    fill(255, 0, 0, 30);
-    square(
-      tup[0] * BLOCK_SIDE_LENGTH,
-      tup[1] * BLOCK_SIDE_LENGTH,
-      BLOCK_SIDE_LENGTH
-    );
-    fill("black");
+  if(DEBUG){
+    for (let tup of blocksInSight) {
+      // circle(tup[0] * BLOCK_SIDE_LENGTH, tup[1] * BLOCK_SIDE_LENGTH, 10);
+      fill(255, 0, 0, 30);
+      square(
+        tup[0] * BLOCK_SIDE_LENGTH,
+        tup[1] * BLOCK_SIDE_LENGTH,
+        BLOCK_SIDE_LENGTH
+      );
+      fill("black");
+    }
   }
 
-  fill("green");
-  circle(x0 * BLOCK_SIDE_LENGTH, y0 * BLOCK_SIDE_LENGTH, 10);
-  // todo: go alone ray until it hits a block. this can only happen when one of the coordinates is even
-  return [x, y];
+  return blocksInSight;
 }
 
 function blockInside(player) {
