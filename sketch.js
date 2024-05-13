@@ -282,8 +282,9 @@ function drawChunk(chunk) {
 
 function drawPlayer(player) {
   fill("red");
-  circle(player.x, player.y, PLAYER_SIZE);
   translate(player.x, player.y);
+  rect(-0.3*BLOCK_SIDE_LENGTH, 0, 0.6*BLOCK_SIDE_LENGTH, 1.8*BLOCK_SIDE_LENGTH);
+  circle(0, 0, PLAYER_SIZE);
   rotate(-player.direction);
   scale(0.5);
   triangle(-15, 0, 0, -30, 15, 0);
