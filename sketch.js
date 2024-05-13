@@ -37,7 +37,7 @@ function mousePressed(event) {
   if (event.button === 2) {
     // add block
     let val = getBlockToAddLocationInChunkCoords();
-    if(!val){
+    if (!val) {
       return null;
     }
 
@@ -67,7 +67,7 @@ function getBlockToAddLocationInChunkCoords() {
     if (allChunks[key].contents[y][x] !== 0) {
       return prev;
     }
-    prev = [key, [x,y]];
+    prev = [key, [x, y]];
   }
   return null;
 }
@@ -86,10 +86,10 @@ function getSelectedBlockInChunkCoords() {
 
 function highlightSelectedBlock() {
   const val = getSelectedBlockInChunkCoords();
-  if(!val){
+  if (!val) {
     return;
   }
-  const [key, [x,y]] = val; 
+  const [key, [x, y]] = val;
 
   fill("black");
   square(allChunks[key].position[0] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + x * BLOCK_SIDE_LENGTH,
@@ -101,10 +101,10 @@ function highlightSelectedBlock() {
 
 function highlightBlockToBuild() {
   const val = getBlockToAddLocationInChunkCoords();
-  if(!val){
+  if (!val) {
     return;
   }
-  const [key, [x,y]] = val; 
+  const [key, [x, y]] = val;
 
   fill("green");
   square(allChunks[key].position[0] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + x * BLOCK_SIDE_LENGTH,
@@ -247,10 +247,10 @@ function movePlayer(player) {
   const xDelta = mouseX - player.x;
   const yDelta = mouseY - player.y;
 
-  if(xDelta > 0){
-    player.direction = -Math.atan(yDelta/xDelta) - PI/2;
+  if (xDelta > 0) {
+    player.direction = -Math.atan(yDelta / xDelta) - PI / 2;
   } else {
-    player.direction = -Math.atan(yDelta/xDelta) - 3*PI/2;
+    player.direction = -Math.atan(yDelta / xDelta) - 3 * PI / 2;
   }
 
   // make sure going 2 direction at once is not faster than moving in one direction only
@@ -277,15 +277,41 @@ function drawChunk(chunk) {
 }
 
 function drawPlayer(player) {
+  const pixelToBlock = 1.8 / 32;
   fill("red");
   translate(player.x, player.y);
-  rect(-0.3*BLOCK_SIDE_LENGTH, 0, 0.6*BLOCK_SIDE_LENGTH, 1.8*BLOCK_SIDE_LENGTH);
-  circle(0, 0, PLAYER_SIZE);
+
+  // torso
+  rect(0 - (8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2),
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    8 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
   rotate(-player.direction);
-  scale(0.5);
-  triangle(-15, 0, 0, -30, 15, 0);
-  scale(2);
+  // head
+  square(-8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2, -8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2, 8 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  circle(-1, -2.9, 2)
   rotate(player.direction);
+  // left arm
+  rect(-8 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  //right arm
+  rect(4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  //left leg
+  rect(-8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2,
+    16 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  // right leg
+  rect(0 * pixelToBlock * BLOCK_SIDE_LENGTH / 2,
+    16 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
+    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+
   translate(-player.x, -player.y);
   fill("white");
 }
