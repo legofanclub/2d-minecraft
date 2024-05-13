@@ -23,6 +23,7 @@ function draw() {
 
   addVelocityToPlayerDueToGravity();
   movePlayer(player);
+  applyFrictionToPlayer();
   checkForAndHandleCollisions();
 
   for (let [key, chunk] of Object.entries(allChunks)) {
@@ -59,6 +60,11 @@ function mousePressed(event) {
 
     allChunks[key].contents[y][x] = 0;
   }
+}
+
+function applyFrictionToPlayer(){
+  player.velocity.x *= 0.8;
+  player.velocity.y *= 0.8;
 }
 
 function getBlockToAddLocationInChunkCoords() {
