@@ -228,23 +228,19 @@ function blockInside(player) {
 function movePlayer(player) {
   movement = createVector(0, 0);
   if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
-    movement.y -= 1 * cos(player.direction + PI / 2);
-    movement.x -= 1 * sin(player.direction + PI / 2);
+    movement.x -= 1;
   }
 
   if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-    movement.y += 1 * cos(player.direction + PI / 2);
-    movement.x += 1 * sin(player.direction + PI / 2);
+    movement.x += 1;
   }
 
   if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-    movement.y -= 1 * cos(player.direction);
-    movement.x -= 1 * sin(player.direction);
+    movement.y -= 1;
   }
 
   if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-    movement.y += 1 * cos(player.direction);
-    movement.x += 1 * sin(player.direction);
+    movement.y += 1;
   }
 
   // rotation
