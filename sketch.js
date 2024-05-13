@@ -2,6 +2,7 @@ BLOCK_SIDE_LENGTH = 24;
 CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
 DEBUG = false;
+SELECTION_DISTANCE = 4;
 allChunks = {};
 player = null;
 
@@ -24,62 +25,104 @@ function draw() {
     drawChunk(chunk);
   }
 
-  drawSelectedBlock();
+
+  highlightSelectedBlock();
+  highlightBlockToBuild();
   drawPlayer(player);
 
   fill("white")
 }
 
-// for adding blocks, will first have to get normal of seleted block then add a block there
-function mouseClicked(){
-  let val = getSelectedBlockInChunkCoords();
-  if(!val){
-    return null;
+function mousePressed(event) {
+  if (event.button === 2) {
+    // add block
+    let val = getBlockToAddLocationInChunkCoords();
+    if(!val){
+      return null;
+    }
+
+    const [key, [x, y]] = val;
+
+    allChunks[key].contents[y][x] = 1;
+  } else if (event.button === 0) {
+    // destroy block
+    let val = getSelectedBlockInChunkCoords();
+    if (!val) {
+      return null;
+    }
+
+    const [key, [x, y]] = val;
+
+    allChunks[key].contents[y][x] = 0;
   }
-
-  const [key, [x,y]] = val;
-
-  allChunks[key].contents[y][x] = 0;
 }
 
-function getSelectedBlockInChunkCoords(){
-  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, 4);
+function getBlockToAddLocationInChunkCoords() {
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE);
   const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
 
-  for ([key, [x,y]] of blocksInWorld){
-    if(allChunks[key].contents[y][x] !== 0){
-      return([key, [x,y]]);
+  // return the block before the filled block in our line of sight
+  let prev = null;
+  for ([key, [x, y]] of blocksInWorld) {
+    if (allChunks[key].contents[y][x] !== 0) {
+      return prev;
+    }
+    prev = [key, [x,y]];
+  }
+  return null;
+}
+
+function getSelectedBlockInChunkCoords() {
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE);
+  const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
+
+  for ([key, [x, y]] of blocksInWorld) {
+    if (allChunks[key].contents[y][x] !== 0) {
+      return ([key, [x, y]]);
     }
   }
   return null;
 }
 
-function drawSelectedBlock(){
-  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, 4);
-  const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
+function highlightSelectedBlock() {
+  const val = getSelectedBlockInChunkCoords();
+  if(!val){
+    return;
+  }
+  const [key, [x,y]] = val; 
 
   fill("black");
-  for ([key, [x,y]] of blocksInWorld){
-    if(allChunks[key].contents[y][x] !== 0){
-      square(allChunks[key].position[0]*CHUNK_SIDE_LENGTH*BLOCK_SIDE_LENGTH + x*BLOCK_SIDE_LENGTH,
-        allChunks[key].position[1]*CHUNK_SIDE_LENGTH*BLOCK_SIDE_LENGTH + y*BLOCK_SIDE_LENGTH,
-        BLOCK_SIDE_LENGTH
-      );
-      break;
-    }
+  square(allChunks[key].position[0] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + x * BLOCK_SIDE_LENGTH,
+    allChunks[key].position[1] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + y * BLOCK_SIDE_LENGTH,
+    BLOCK_SIDE_LENGTH
+  );
+  fill("white");
+}
+
+function highlightBlockToBuild() {
+  const val = getBlockToAddLocationInChunkCoords();
+  if(!val){
+    return;
   }
+  const [key, [x,y]] = val; 
+
+  fill("green");
+  square(allChunks[key].position[0] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + x * BLOCK_SIDE_LENGTH,
+    allChunks[key].position[1] * CHUNK_SIDE_LENGTH * BLOCK_SIDE_LENGTH + y * BLOCK_SIDE_LENGTH,
+    BLOCK_SIDE_LENGTH
+  );
   fill("white");
 }
 
 
-function worldToChunkCoords(coords){
+function worldToChunkCoords(coords) {
   let [x, y] = coords;
   const chunkX = Math.floor(x / CHUNK_SIDE_LENGTH);
   const chunkY = Math.floor(y / CHUNK_SIDE_LENGTH);
   const interiorX = x % CHUNK_SIDE_LENGTH;
   const interiorY = y % CHUNK_SIDE_LENGTH;
 
-  return([`(${chunkX},${chunkY})`, [interiorX, interiorY]]);
+  return ([`(${chunkX},${chunkY})`, [interiorX, interiorY]]);
 }
 
 // returns the world coordinates of all blocks in line of sight ordered from closest to farthest
@@ -102,16 +145,16 @@ function getAllBlocksCoordsInSight(player, length) {
   let y = Math.floor(y0);
 
   DEBUG ?
-  line(
-    x0 * BLOCK_SIDE_LENGTH,
-    y0 * BLOCK_SIDE_LENGTH,
-    x1 * BLOCK_SIDE_LENGTH,
-    y1 * BLOCK_SIDE_LENGTH
-  ) : null;
-  
+    line(
+      x0 * BLOCK_SIDE_LENGTH,
+      y0 * BLOCK_SIDE_LENGTH,
+      x1 * BLOCK_SIDE_LENGTH,
+      y1 * BLOCK_SIDE_LENGTH
+    ) : null;
+
   let dt_dx = 1.0 / dx;
   let dt_dy = 1.0 / dy;
-  
+
   let t = 0;
 
   let n = 1;
@@ -143,7 +186,7 @@ function getAllBlocksCoordsInSight(player, length) {
     n += y - Math.floor(y1);
     t_next_vertical = (y0 - Math.floor(y0)) * dt_dy;
   }
-  
+
   const blocksInSight = []
   for (; n > 0; n--) {
     blocksInSight.push([x, y]);
@@ -159,7 +202,7 @@ function getAllBlocksCoordsInSight(player, length) {
     }
   }
 
-  if(DEBUG){
+  if (DEBUG) {
     for (let tup of blocksInSight) {
       // circle(tup[0] * BLOCK_SIDE_LENGTH, tup[1] * BLOCK_SIDE_LENGTH, 10);
       fill(255, 0, 0, 30);
@@ -226,9 +269,9 @@ function drawChunk(chunk) {
       if (block != 0) {
         square(
           chunk.position[0] * BLOCK_SIDE_LENGTH * CHUNK_SIDE_LENGTH +
-            x * BLOCK_SIDE_LENGTH,
+          x * BLOCK_SIDE_LENGTH,
           chunk.position[1] * BLOCK_SIDE_LENGTH * CHUNK_SIDE_LENGTH +
-            y * BLOCK_SIDE_LENGTH,
+          y * BLOCK_SIDE_LENGTH,
           BLOCK_SIDE_LENGTH
         );
       }
