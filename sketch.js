@@ -7,7 +7,7 @@ allChunks = {};
 player = null;
 
 function setup() {
-  player = new Player(200, 350);
+  player = new Player(200, 250);
   player.direction = -PI / 5;
   allChunks["(0,0)"] = new Chunk(0, 0);
   allChunks["(1,1)"] = new Chunk(1, 1);
@@ -248,12 +248,13 @@ function movePlayer(player) {
   }
 
   // rotation
-  if (keyIsDown(81)) {
-    player.direction += 0.1;
-  }
+  const xDelta = mouseX - player.x;
+  const yDelta = mouseY - player.y;
 
-  if (keyIsDown(69)) {
-    player.direction -= 0.1;
+  if(xDelta > 0){
+    player.direction = -Math.atan(yDelta/xDelta) - PI/2;
+  } else {
+    player.direction = -Math.atan(yDelta/xDelta) - 3*PI/2;
   }
 
   // make sure going 2 direction at once is not faster than moving in one direction only
