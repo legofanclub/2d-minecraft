@@ -3,6 +3,8 @@ CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
 DEBUG = false;
 SELECTION_DISTANCE = 4;
+MAX_X_VEL = 2;
+MAX_Y_VEL = 2;
 allChunks = {};
 player = null;
 
@@ -19,7 +21,9 @@ function setup() {
 function draw() {
   background(220);
 
+  addVelocityToPlayerDueToGravity();
   movePlayer(player);
+  checkForAndHandleCollisions();
 
   for (let [key, chunk] of Object.entries(allChunks)) {
     drawChunk(chunk);
@@ -226,21 +230,21 @@ function blockInside(player) {
 
 // mutates the player
 function movePlayer(player) {
-  movement = createVector(0, 0);
+  desiredMovement = createVector(0, 0);
   if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
-    movement.x -= 1;
+    desiredMovement.x -= 1;
   }
 
   if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-    movement.x += 1;
+    desiredMovement.x += 1;
   }
 
   if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-    movement.y -= 1;
+    desiredMovement.y -= 1;
   }
 
   if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-    movement.y += 1;
+    desiredMovement.y += 1;
   }
 
   // rotation
@@ -254,10 +258,40 @@ function movePlayer(player) {
   }
 
   // make sure going 2 direction at once is not faster than moving in one direction only
-  movement.normalize();
+  desiredMovement.normalize();
 
-  player.x += movement.x;
-  player.y += movement.y;
+  updatePlayerVelocity(desiredMovement);
+
+  player.x += player.velocity.x;
+  player.y += player.velocity.y;
+}
+
+// todo
+function willCollide(direction){
+
+}
+
+function checkForAndHandleCollisions(){
+  if(willCollide("x")){
+    player.velocity.x = 0;
+  }
+  if(willCollide("y")){
+    player.velocity.y = 0;
+  }
+}
+
+function addVelocityToPlayerDueToGravity (){
+  console.log("todo addVelocityToPlayerDueToGravity ");
+}
+
+function updatePlayerVelocity(desiredMovement){
+  if(Math.abs(player.velocity.x + desiredMovement.x) < MAX_X_VEL){
+    player.velocity.x += desiredMovement.x;
+  }
+
+  if(Math.abs(player.velocity.y + desiredMovement.y) < MAX_Y_VEL){
+    player.velocity.y += desiredMovement.y;
+  }
 }
 
 function drawChunk(chunk) {
@@ -320,6 +354,7 @@ class Player {
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
+    this.velocity = {x: 0, y:0 };
     this.direction = 0;
   }
 }
