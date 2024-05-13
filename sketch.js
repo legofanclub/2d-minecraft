@@ -1,12 +1,13 @@
 BLOCK_SIDE_LENGTH = 24;
 CHUNK_SIDE_LENGTH = 8;
 PLAYER_SIZE = 10;
-DEBUG = false;
+DEBUG = true;
 SELECTION_DISTANCE = 4;
 MAX_X_VEL = 2;
 MAX_Y_VEL = 2;
 allChunks = {};
 player = null;
+const SKIN_PIXEL_TO_BLOCK = 1.8 / 32;
 
 function setup() {
   player = new Player(200, 250);
@@ -15,7 +16,7 @@ function setup() {
   allChunks["(1,1)"] = new Chunk(1, 1);
   allChunks["(0,1)"] = new Chunk(0, 1);
   allChunks["(1,0)"] = new Chunk(1, 0);
-  createCanvas(800, 800);
+  createCanvas(400, 400);
 }
 
 function draw() {
@@ -35,7 +36,11 @@ function draw() {
   highlightBlockToBuild();
   drawPlayer(player);
 
-  fill("white")
+  fill("white");
+}
+
+function collidesWithBody(block) {
+  Error("todo");
 }
 
 function mousePressed(event) {
@@ -62,7 +67,7 @@ function mousePressed(event) {
   }
 }
 
-function applyFrictionToPlayer(){
+function applyFrictionToPlayer() {
   player.velocity.x *= 0.8;
   player.velocity.y *= 0.8;
 }
@@ -74,7 +79,7 @@ function getBlockToAddLocationInChunkCoords() {
   // return the block before the filled block in our line of sight
   let prev = null;
   for ([key, [x, y]] of blocksInWorld) {
-    if (allChunks[key].contents[y][x] !== 0) {
+    if (key in allChunks && allChunks[key].contents[y][x] !== 0) {
       return prev;
     }
     prev = [key, [x, y]];
@@ -87,7 +92,7 @@ function getSelectedBlockInChunkCoords() {
   const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
 
   for ([key, [x, y]] of blocksInWorld) {
-    if (allChunks[key].contents[y][x] !== 0) {
+    if (key in allChunks && allChunks[key].contents[y][x] !== 0) {
       return ([key, [x, y]]);
     }
   }
@@ -221,7 +226,7 @@ function getAllBlocksCoordsInSight(player, length) {
         tup[1] * BLOCK_SIDE_LENGTH,
         BLOCK_SIDE_LENGTH
       );
-      fill("black");
+      fill("white");
     }
   }
 
@@ -257,14 +262,14 @@ function movePlayer(player) {
   const xDelta = mouseX - player.x;
   const yDelta = mouseY - player.y;
 
-  if (xDelta > 0) {
+  if (xDelta >= 0) {
     player.direction = -Math.atan(yDelta / xDelta) - PI / 2;
   } else {
     player.direction = -Math.atan(yDelta / xDelta) - 3 * PI / 2;
   }
 
   // make sure going 2 direction at once is not faster than moving in one direction only
-  desiredMovement.normalize();
+  desiredMovement = desiredMovement.normalize();
 
   updatePlayerVelocity(desiredMovement);
 
@@ -272,31 +277,52 @@ function movePlayer(player) {
   player.y += player.velocity.y;
 }
 
+function insidePlayerHitbox(point) {
+  const minPlayerX = player.x - (8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
+  const maxPlayerX = player.x + (8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
+  const minPlayerY = player.y - (4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
+  const maxPlayerY = player.y + (28 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
+  return (point.x >= minPlayerX && point.x <= maxPlayerX && point.y >= minPlayerY && point.y <= maxPlayerY);
+}
+
 // todo
-function willCollide(direction){
+function willCollide(direction) {
+  if (DEBUG) {
+    // draw hitbox
+    translate(player.x, player.y);
+    rect(-8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+      -4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+      16 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+      32 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
+    translate(-player.x, -player.y);
+  }
 
 }
 
-function checkForAndHandleCollisions(){
-  if(willCollide("x")){
+function checkForAndHandleCollisions() {
+  if (willCollide("x")) {
     player.velocity.x = 0;
   }
-  if(willCollide("y")){
+  if (willCollide("y")) {
     player.velocity.y = 0;
   }
 }
 
-function addVelocityToPlayerDueToGravity (){
-  console.log("todo addVelocityToPlayerDueToGravity ");
+function addVelocityToPlayerDueToGravity() {
+  // player.velocity.y += 0.1;
 }
 
-function updatePlayerVelocity(desiredMovement){
-  if(Math.abs(player.velocity.x + desiredMovement.x) < MAX_X_VEL){
+function updatePlayerVelocity(desiredMovement) {
+  if (Math.abs(player.velocity.x + desiredMovement.x) < MAX_X_VEL) {
     player.velocity.x += desiredMovement.x;
+  } else {
+    player.velocity.x = MAX_X_VEL * Math.sign(desiredMovement.x);
   }
 
-  if(Math.abs(player.velocity.y + desiredMovement.y) < MAX_Y_VEL){
+  if (Math.abs(player.velocity.y + desiredMovement.y) < MAX_Y_VEL) {
     player.velocity.y += desiredMovement.y;
+  } else {
+    player.velocity.y = MAX_Y_VEL * Math.sign(desiredMovement.y);
   }
 }
 
@@ -317,40 +343,39 @@ function drawChunk(chunk) {
 }
 
 function drawPlayer(player) {
-  const pixelToBlock = 1.8 / 32;
   fill("red");
   translate(player.x, player.y);
 
   // torso
-  rect(0 - (8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2),
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    8 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  rect(0 - (8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH / 2),
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    12 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
   rotate(-player.direction);
   // head
-  square(-8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2, -8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2, 8 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  square(-8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH / 2, -8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH / 2, 8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
   circle(-1, -2.9, 2)
   rotate(player.direction);
   // left arm
-  rect(-8 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  rect(-8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    12 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
   //right arm
-  rect(4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  rect(4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    12 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
   //left leg
-  rect(-8 * pixelToBlock * BLOCK_SIDE_LENGTH / 2,
-    16 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  rect(-8 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH / 2,
+    16 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    12 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
   // right leg
-  rect(0 * pixelToBlock * BLOCK_SIDE_LENGTH / 2,
-    16 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    4 * pixelToBlock * BLOCK_SIDE_LENGTH,
-    12 * pixelToBlock * BLOCK_SIDE_LENGTH);
+  rect(0 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH / 2,
+    16 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    4 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH,
+    12 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH);
 
   translate(-player.x, -player.y);
   fill("white");
@@ -360,16 +385,18 @@ class Player {
   constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
-    this.velocity = {x: 0, y:0 };
+    this.velocity = { x: 0, y: 0 };
     this.direction = 0;
   }
 }
 
 class Chunk {
   constructor(x = 0, y = 0) {
-    this.contents = Array.from({ length: CHUNK_SIDE_LENGTH }, () =>
-      Array.from({ length: CHUNK_SIDE_LENGTH }, () => Math.random() > 0.7 ? 1 : 0)
-    );
+    this.contents = [];
+    for (let i = 0; i < 7; i++) {
+      this.contents.push(Array.from({ length: CHUNK_SIDE_LENGTH }, () => 0));
+    }
+    this.contents.push(Array.from({ length: CHUNK_SIDE_LENGTH }, () => 1));
     this.position = [x, y];
   }
 }
