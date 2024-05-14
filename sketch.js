@@ -301,7 +301,7 @@ function willCollide(direction) {
 
 function checkForAndHandleCollisions() {
   const blockBelowPlayer = blockImmediatelyBelowPlayer();
-  if(blockBelowPlayer){
+  if(blockBelowPlayer && player.velocity.y >= 0){
     player.velocity.y = 0;
     player.y = (blockBelowPlayer[1])*BLOCK_SIDE_LENGTH; // this sets the player's (0,0) (it's eye) to block height
     player.y -= 28 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH; // this accounts for the player's height
