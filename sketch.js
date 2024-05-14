@@ -69,7 +69,7 @@ function mousePressed(event) {
 
 function applyFrictionToPlayer() {
   player.velocity.x *= 0.8;
-  player.velocity.y *= 0.8;
+  player.velocity.y *= 0.95;
 }
 
 function getBlockToAddLocationInChunkCoords() {
@@ -250,12 +250,9 @@ function movePlayer(player) {
     desiredMovement.x += 1;
   }
 
-  if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-    desiredMovement.y -= 1;
-  }
-
-  if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-    desiredMovement.y += 1;
+  // jump
+  if ((keyIsDown(UP_ARROW) || keyIsDown(87) || keyIsDown(32)) && playerIsGrounded()) { // todo: add check for player being grounded
+    player.velocity.y -= 2;
   }
 
   // rotation
@@ -269,7 +266,7 @@ function movePlayer(player) {
   }
 
   // make sure going 2 direction at once is not faster than moving in one direction only
-  desiredMovement = desiredMovement.normalize();
+  // desiredMovement = desiredMovement.normalize();
 
   updatePlayerVelocity(desiredMovement);
 
@@ -299,6 +296,15 @@ function willCollide(direction) {
 
 }
 
+// this is weird but maybe good?
+function playerIsGrounded(){
+  if(blockImmediatelyBelowPlayer()){
+    return(true);
+  } else {
+    return(false);
+  }
+}
+
 function checkForAndHandleCollisions() {
   const blockBelowPlayer = blockImmediatelyBelowPlayer();
   if(blockBelowPlayer && player.velocity.y >= 0){
@@ -317,10 +323,11 @@ function blockImmediatelyBelowPlayer(){
       return blockInWorld;
     }
   }
+  return(null);
 }
 
 function addVelocityToPlayerDueToGravity() {
-  // player.velocity.y += 0.1;
+  player.velocity.y += 0.3;
 }
 
 function updatePlayerVelocity(desiredMovement) {
@@ -330,11 +337,11 @@ function updatePlayerVelocity(desiredMovement) {
     player.velocity.x = MAX_X_VEL * Math.sign(desiredMovement.x);
   }
 
-  if (Math.abs(player.velocity.y + desiredMovement.y) < MAX_Y_VEL) {
-    player.velocity.y += desiredMovement.y;
-  } else {
-    player.velocity.y = MAX_Y_VEL * Math.sign(desiredMovement.y);
-  }
+  // if (Math.abs(player.velocity.y + desiredMovement.y) < MAX_Y_VEL) {
+  //   player.velocity.y += desiredMovement.y;
+  // } else {
+  //   player.velocity.y = MAX_Y_VEL * Math.sign(desiredMovement.y);
+  // }
 }
 
 function drawChunk(chunk) {
