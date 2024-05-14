@@ -73,7 +73,7 @@ function applyFrictionToPlayer() {
 }
 
 function getBlockToAddLocationInChunkCoords() {
-  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE);
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE, player.direction);
   const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
 
   // return the block before the filled block in our line of sight
@@ -88,7 +88,7 @@ function getBlockToAddLocationInChunkCoords() {
 }
 
 function getSelectedBlockInChunkCoords() {
-  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE);
+  const blocksCoordsInLineOfSight = getAllBlocksCoordsInSight(player, SELECTION_DISTANCE, player.direction);
   const blocksInWorld = blocksCoordsInLineOfSight.map((coord) => worldToChunkCoords(coord));
 
   for ([key, [x, y]] of blocksInWorld) {
@@ -141,16 +141,16 @@ function worldToChunkCoords(coords) {
 }
 
 // returns the world coordinates of all blocks in line of sight ordered from closest to farthest
-function getAllBlocksCoordsInSight(player, length) {
+function getAllBlocksCoordsInSight(player, length, direction) {
   // algorithm taken from here: https://playtechs.blogspot.com/2007/03/raytracing-on-grid.html
   const x0 = player.x / BLOCK_SIDE_LENGTH;
   const y0 = player.y / BLOCK_SIDE_LENGTH;
 
   const x1 =
-    (player.x - length * BLOCK_SIDE_LENGTH * sin(player.direction)) /
+    (player.x - length * BLOCK_SIDE_LENGTH * sin(direction)) /
     BLOCK_SIDE_LENGTH;
   const y1 =
-    (player.y - length * BLOCK_SIDE_LENGTH * cos(player.direction)) /
+    (player.y - length * BLOCK_SIDE_LENGTH * cos(direction)) /
     BLOCK_SIDE_LENGTH;
 
   const dx = Math.abs(x1 - x0);
@@ -300,11 +300,22 @@ function willCollide(direction) {
 }
 
 function checkForAndHandleCollisions() {
-  if (willCollide("x")) {
-    player.velocity.x = 0;
-  }
-  if (willCollide("y")) {
+  const blockBelowPlayer = blockImmediatelyBelowPlayer();
+  if(blockBelowPlayer){
     player.velocity.y = 0;
+    player.y = (blockBelowPlayer[1])*BLOCK_SIDE_LENGTH; // this sets the player's (0,0) (it's eye) to block height
+    player.y -= 28 * SKIN_PIXEL_TO_BLOCK * BLOCK_SIDE_LENGTH; // this accounts for the player's height
+  }
+}
+
+function blockImmediatelyBelowPlayer(){
+  const blockInWorld = getAllBlocksCoordsInSight(player,2,-PI).at(-1);
+  const blockInChunk = worldToChunkCoords(blockInWorld)
+  if(blockInChunk){
+    [key, [x,y]] = blockInChunk;
+    if (allChunks[key].contents[y][x] !== 0){
+      return blockInWorld;
+    }
   }
 }
 
